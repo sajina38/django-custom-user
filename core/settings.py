@@ -9,6 +9,9 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+from django.templatetags.static import static
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
 from pathlib import Path
 
@@ -31,13 +34,18 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold', #before django.contrib.admin
+    ".contrib.filters",  # optional, if special filters are needed
+    "unfold.contrib.forms",  # optional, if special form elements are needed
+    "unfold.contrib.inlines",  # opt
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users'
+    'users',
+    'products'
 ]
 
 
@@ -117,6 +125,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -124,3 +136,79 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "users.CustomUser"
+
+
+UNFOLD = {
+    "SITE_TITLE": "Swift Admin",
+    "SITE_HEADER": "Swift Admin Portal",
+    "SITE_SUBHEADER": "Your way to manage products and users",
+    "SITE_LOGO": lambda request: static(
+        "images/logo.png"
+    ),  # both modes, optimise for 32px height
+    "SIDEBAR": {
+        "show_search": True,  # Search in applications and models names
+        #     "command_search": False,  # Replace the sidebar search with the command search
+        # "show_all_applications": True,  # Dropdown with all applications and models
+        "navigation": [
+            {
+                "title": _("Browse"),
+                "items": [
+                    {
+                        "title": _("Product"),
+                        "items": [
+                            {
+                                "title": _("Products"),
+                                "icon": "people",
+                                "link": reverse_lazy(
+                                    "admin:products_product_changelist"
+                                ),
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
+    # "TABS": [
+    #     {
+    #         "models": [
+    #             "app_label.model_name_in_lowercase",
+    #         ],
+    #         "items": [
+    #             {
+    #                 "title": _("Your custom title"),
+    #                 "link": reverse_lazy("admin:app_label_model_name_changelist"),
+    #                 "permission": "sample_app.permission_callback",
+    #             },
+    #         ],
+    #     },
+    # ],
+}
+
+
+# def dashboard_callback(request, context):
+#     """
+#     Callback to prepare custom variables for index template which is used as dashboard
+#     template. It can be overridden in application by creating custom admin/index.html.
+#     """
+#     context.update(
+#         {
+#             "sample": "example",  # this will be injected into templates/admin/index.html
+#         }
+#     )
+#     return context
+
+
+# def environment_callback(request):
+#     """
+#     Callback has to return a list of two values represeting text value and the color
+#     type of the label displayed in top right corner.
+#     """
+#     return ["Production", "danger"] # info, danger, warning, success
+
+
+# def badge_callback(request):
+#     return 3
+
+# def permission_callback(request):
+#     return request.user.has_perm("sample_app.change_model")
